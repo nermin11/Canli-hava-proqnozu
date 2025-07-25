@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hava Proqnozu Demo</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #eef1f5;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input {
+      padding: 10px;
+      width: 70%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
+    button {
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .weather-card {
+      background: #dfefff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      display: none;
+    }
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌦️ Hava Proqnozu</h1>
+    <input type="text" id="cityInput" placeholder="Şəhər adı daxil edin..." />
+    <button id="searchBtn">Axtar</button>
+
+    <div id="weatherResult" class="weather-card">
+      <h2 id="cityName"></h2>
+      <img id="weatherIcon" src="" alt="Hava ikonası" width="80" />
+      <p><span id="temp"></span> °C</p>
+      <p id="description"></p>
+      <p>💨 Külək: <span id="wind"></span> km/s</p>
+      <p>💧 Rütubət: <span id="humidity"></span> %</p>
+    </div>
+    <div id="error" class="error-message"></div>
+  </div>
+
+  <script>
+    $(document).ready(function(){
+      const apiKey = "f82c6afef28dfe6ed1de8fb5ecfa0339"; 
+    $("#searchBtn").click(function(){
+      const city = $("#cityInput").val().trim();
+      if(!city){
+        showError("Zəhmət olmasa şəhər adını daxil edin.");
+        return
+      }
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=az`;
+      $.ajax({
+        url : url,
+        method: "Get",
+        success : function(data){
+          $("#error").hide();
+          $("#weatherResult").show();
+          $("#cityName").text(data.name);
+          const iconCode= data.weather[0].icon;
+          const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+          $("#weatherIcon").attr("src"  , iconUrl);
+          $("#temp").text(Math.round(data.main.temp));
+          $("#description").text(data.weather[0].description);
+          $("#wind").text(data.wind.speed);
+          $("#humidity").text(data.main.humidity);
+        },
+        error : function(xhr){
+          let msg = "Xeta bas verdi";
+          if(xhr.status===401){
+            msg = "Api acari duzgun deyil";}
+              else if (xhr.status === 404){
+                msg = "Seher tapilmadi";
+              }
+            
+              showError(msg);
+        },
+      });
+    });
+      function showError(msg){
+        $("#weatherResult").hide();
+        $("#error").text(msg).show();
+      }
+    });
+    
+  </script>
+</body>
+</html>
